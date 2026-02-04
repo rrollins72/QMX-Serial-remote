@@ -74,49 +74,34 @@ done during the main loop and are near real time.
 
 **Software and IDE build**
 
-The Arduino IDE 2.3.7 was used to build the code for this project. It will
-require the board manager esp-32 by Espressif Systems be installed, and the
-ST7735_LTSM library to be installed. Because of the limited pins on the
+The Arduino IDE 2.3.7 on Win11 was used to build the code for this project. It will
+require the board manager 'esp-32 by Espressif Systems' be installed, and the
+'ST7735_LTSM' library to be installed. Because of the limited pins on the
 ESP32-S3-Zero package, a modification to the following file needs to be made to
 provide an SPI interface on the IO pins used. This is to change from the
 defaults. Here is the note in the code:
 
-// NOTE: To map the SPI to available pins, a change to the file in this location is necessary:
-
-// C:\\Users\\xxxxx\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.x.x\\variants\\waveshare_esp32_s3_zero\\pins_arduino.h
-
-// Mapping based on the ESP32S3 data sheet - alternate for SPI2
-
-// static const uint8_t SS = 10; // FSPICS0
-
-// static const uint8_t MOSI = 11; // FSPID
-
-// static const uint8_t MISO = 13; // FSPIQ
-
+// NOTE: To map the SPI to available pins, a change to the file in this location is necessary:\
+// C:\\Users\\xxxxx\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.x.x\\variants\\waveshare_esp32_s3_zero\\pins_arduino.h\
+// Mapping based on the ESP32S3 data sheet - alternate for SPI2\
+// static const uint8_t SS = 10; // FSPICS0\
+// static const uint8_t MOSI = 11; // FSPID\
+// static const uint8_t MISO = 13; // FSPIQ\
 // static const uint8_t SCK = 12; // FSPICLK
 
 This gives the display a fast update capability and works well.
-The chosen frequencies for the band-switch are as follows:
-160M 1.9MHz
 
-80M 3.6MHz
-
-60M 5.3585MHz
-
-40M 7.1MHz
-
-30M 10.125MHz
-
-20M 14.150MHz
-
-17M 18.110MHz
-
-15M 21.2MHz
-
-12M 24.930MHz
-
-10M 28.3MHz
-
+The chosen frequencies for the band-switch are as follows:\
+160M 1.9MHz\
+80M 3.6MHz\
+60M 5.3585MHz\
+40M 7.1MHz\
+30M 10.125MHz\
+20M 14.150MHz\
+17M 18.110MHz\
+15M 21.2MHz\
+12M 24.930MHz\
+10M 28.3MHz\
 6M 50.1MHz
 
 These can be changed in the code if needed. As built, they are constants.
