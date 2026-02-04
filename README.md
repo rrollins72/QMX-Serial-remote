@@ -17,7 +17,9 @@ The ESP32-S3 I used is a knock-off of the Waveshare ESP32-S3-Zero, and it has a
 limited number of IO pins due to the small package size. I decided to use 2
 external switches and the rotary encoder switch for function selects, and a 1.8”
 120x160 ST7735 display. The basic schematic is as shown:
+<img width="1240" height="886" alt="image001" src="https://github.com/user-attachments/assets/b670ec77-e025-4c8b-b76b-8ad69ce0f98a" />
 
+Note that the display unit I chose had a 3.3V regulator on the board, so it needed 5V to run it. Others that don't have the regulator would run on 3.3V. The 3.3V output from the ESP32-S3-Zero is capable of about 30mA, so it should work OK.
 
 The backlight is always enabled in this scheme. IO3 and IO7 could be used to
 turn on and off the backlight, or to add another switch.
@@ -30,9 +32,9 @@ I built the first pass on a breadboard and then put it all in a small 3D printed
 enclosure with point-to-point wiring. I didn’t attempt to do a PCB for this
 project.
 
-
 Here is a photo of the finished device connected to the QMX+ showing the unit
 connected to the QMX+ and operating.
+![image005](https://github.com/user-attachments/assets/277ae582-d94b-4a88-ae7f-44c74a76d899)
 
 **Operation summary**
 
@@ -47,9 +49,9 @@ There are 3 controls on the display:
 
 The rotary knob with button on press, button A (left) and button B (right).
 
-Functions:
+**Functions**
 
-Rotary knob will normally adjust the frequency depending on the selected step
+**Rotary knob** will normally adjust the frequency depending on the selected step
 size. The step size is changed by a short press on the rotary knob. The step
 sizes are 10Hz, 100Hz, 1kHz, 10kHz.
 
@@ -60,10 +62,10 @@ and the band will be changed to the selected. (This process needs some
 refinement since it required a change to the VFOA frequency to make the change,
 so previous VFOA settings are lost).
 
-Button A is on the left and below the rotary control. It simply controls the
+**Button A** is on the left and below the rotary control. It simply controls the
 selected VFOA or B.
 
-Button B is on the right and below the rotary control. It controls the selected
+**Button B** is on the right and below the rotary control. It controls the selected
 mode. The modes are cycled through: CW, DIGI, USB, LSB (same as QMX).
 
 Display updates occur on a 1 second increment so there can be some visible lag
@@ -100,14 +102,23 @@ The chosen frequencies for the band-switch are as follows:
 80M 3.6MHz
 
 60M 5.3585MHz
+
 40M 7.1MHz
+
 30M 10.125MHz
+
 20M 14.150MHz
+
 17M 18.110MHz
+
 15M 21.2MHz
+
 12M 24.930MHz
+
 10M 28.3MHz
+
 6M 50.1MHz
+
 These can be changed in the code if needed. As built, they are constants.
 
 **Caveats and improvements**
