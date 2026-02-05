@@ -106,6 +106,10 @@ The chosen frequencies for the band-switch are as follows:\
 
 These can be changed in the code if needed. As built, they are constants.
 
+**Enclosure**
+The STL files for the enclosure are included in the project files. These were
+done on Tinker CAD. 
+
 **Caveats and improvements**
 
 The code for this was built without the use of any extensive buffer management,
@@ -118,11 +122,22 @@ but it quite functional. Just takes some getting used to. A third control switch
 could be added to make this easier, but I had already built the enclosure by the
 time I decided to add band switching.
 
+I also built a version of the code for a larger 2.4" TFT display using the 
+ST7789 driver. This is a 320x240 display, so it takes a lot longer to refresh
+the screen and it isn't as responsive to the rotary control. It still works well
+enough and is bigger to look at. I did not put that version in an enclosure. The code is 
+included in this project area.
+
+I did test this with a 15 foot audio cable and didn't see any issues with the 
+serial data stream between the remote and the QMX+ (at 19200 baud). It appears
+to be quite robust.
+
 The ESP32-S3 has built in Wifi, so it would be possible to create a server page
 that could also show the same information as the display, but that is beyond
 what I intended for this effort. Also, the S3 does not support a Bluetooth SPP
 stack, so it can’t be fully wireless to the QMX with simple Bluetooth serial
 modules.
 
-Adding battery to allow the unit to run without power from USB. Use USB for charging.
+Adding a small battery to allow the unit to run without power from USB will be
+a future update. I will use USB for charging.
 
