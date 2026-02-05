@@ -35,6 +35,7 @@ project.
 
 Here is a photo of the finished device connected to the QMX+ showing the unit
 connected to the QMX+ and operating.
+
 ![image005](https://github.com/user-attachments/assets/277ae582-d94b-4a88-ae7f-44c74a76d899)
 
 **Operation summary**
