@@ -13,7 +13,8 @@ Hats off to Hans Summers for a great design on the QMX/QMX+ and his stellar
 documentation for the CAT command structures and the tools to monitor the CAT
 commands to the unit. That made this effort much easier.
 
-The ESP32-S3 I used is a knock-off of the Waveshare ESP32-S3-Zero, and it has a
+The ESP32-S3 I used is the (equivalent of a) Waveshare ESP32-S3-Zero, (see
+https://www.waveshare.com/wiki/ESP32-S3-Zero) and it has a
 limited number of IO pins due to the small package size. I decided to use 2
 external switches and the rotary encoder switch for function selects, and a 1.8”
 120x160 ST7735 display. The basic schematic is as shown:
@@ -107,6 +108,7 @@ The chosen frequencies for the band-switch are as follows:\
 These can be changed in the code if needed. As built, they are constants.
 
 **Enclosure**
+
 The STL files for the enclosure are included in the project files. These were
 done on Tinker CAD. 
 
@@ -140,4 +142,12 @@ modules.
 
 Adding a small battery to allow the unit to run without power from USB will be
 a future update. I will use USB for charging.
+
+**Possible Issues**
+
+With the remote runniing, I have noticed that if I am running WSJT-X for a while that the QMX+ frequency
+for the selected VFO gets set to 0. It is a bit random but quite repeatable. I
+have not discovered the cause. A band change either on the remote or in WSJT-X
+will set the frequency again. WSJT-X does not show that the frequency has changed,
+but the QMX and the remote show the frequency of 0. I could not reproduce this with JS8Call.
 
