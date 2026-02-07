@@ -160,7 +160,7 @@ a future update. I will use USB for charging.
 
 # Possible Issues
 
-With the remote runniing, I have noticed that if I am running WSJT-X for a while that the QMX+ frequency
+With the remote running, I have noticed that if I am also running WSJT-X for a while that the QMX+ frequency
 for the selected VFO gets set to 0. It is a bit random but quite repeatable. I
 have not discovered the cause. A band change either on the remote or in WSJT-X
 will set the frequency again. WSJT-X does not show that the frequency has changed,
