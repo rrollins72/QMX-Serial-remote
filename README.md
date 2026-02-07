@@ -112,6 +112,10 @@ The chosen frequencies for the band-switch are as follows:\
 
 These can be changed in the code if needed. As built, they are constants.
 
+I elected to have the display show my local time instead of UTC, though the UTC
+is displayed as shown on the QMX+ LCD bottom line. This is easily changed
+in the code if desired.
+
 # Enclosure
 
 The STL files for the enclosure are included in the project files. These were
