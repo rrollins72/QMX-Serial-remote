@@ -3,7 +3,7 @@
 A little background…I began experimenting with using a couple inexpensive ESP32
 modules when they appeared on Aliexpress for less than \$5. I decided to get an
 ESP32-C3 and an ESP32-S3 based small (zero sized) modules. I also had a few
-ST7735 displays that were needing to be utilized, so I decided to build a small
+ST7735 based displays that were needing to be utilized, so I decided to build a small
 clock that would become an IoT device. That gave me some experience with the
 Arduino IDE for ESP32 and graphics on the small display. I thought it would be
 fun to figure out if I could talk to my QMX+ using the AUX serial port and the
@@ -113,7 +113,7 @@ These can be changed in the code if needed. As built, they are constants.
 The STL files for the enclosure are included in the project files. These were
 done on Tinker CAD. 
 
-**Caveats and improvements**
+**Caveats and Thoughts**
 
 The code for this was built without the use of any extensive buffer management,
 and with easily accessible libraries within the Arduino IDE. That said, there is
@@ -121,7 +121,7 @@ a slight lag time during the 1 second display refresh on reading the rotary
 encoder, so it may feel like it misses once in a while.
 
 Band switching using the double-click on the encoder is not fully consistent,
-but it quite functional. Just takes some getting used to. A third control switch
+but it is quite functional. Just takes some getting used to. A third control switch
 could be added to make this easier, but I had already built the enclosure by the
 time I decided to add band switching.
 
@@ -135,11 +135,14 @@ I did test this with a 15 foot audio cable and didn't see any issues with the
 serial data stream between the remote and the QMX+ (at 19200 baud). It appears
 to be quite robust.
 
-The ESP32-S3 has built in Wifi, so it would be possible to create a server page
+The ESP32-S3 has built in WiFi or Bluetooth, so it would be possible to create a server page
 that could also show the same information as the display, but that is beyond
-what I intended for this effort. Also, the S3 does not support a Bluetooth SPP
-stack, so it can’t be fully wireless to the QMX with simple Bluetooth serial
-modules.
+what I intended for this effort. It would also draw a lot more power since the
+WiFi would need to be active to make it functional. Since ESP32-S3 does not support a Bluetooth SPP
+stack it can’t be fully wireless to the QMX with simple Bluetooth serial
+modules either, so that was not considered.
+
+**Improvements?**
 
 Adding a small battery to allow the unit to run without power from USB will be
 a future update. I will use USB for charging.
@@ -151,4 +154,6 @@ for the selected VFO gets set to 0. It is a bit random but quite repeatable. I
 have not discovered the cause. A band change either on the remote or in WSJT-X
 will set the frequency again. WSJT-X does not show that the frequency has changed,
 but the QMX and the remote show the frequency of 0. I could not reproduce this with JS8Call.
+
+
 
