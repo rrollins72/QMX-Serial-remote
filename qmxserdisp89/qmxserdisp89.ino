@@ -36,6 +36,9 @@
 //Display updates occur on a 1 second increment so there can be some visible lag on some data presented on the display. 
 //The updates from the rotary encoder are done during the main loop and are near real time. 
 //The current build is set up for displaying MST from the clock, but this can be turned off or adjusted
+//  
+//	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
+//  This permission notice shall be included in all copies or substantial portions of the Software.
 //
 //////////////////////////////////////////////////////////////////////////
 //
@@ -770,4 +773,6 @@ void loop() {
       LCbotline();
     }
 		prevmils1 = currentMillis;
-	}} //Main loop end
+	}
+} //Main loop end
+
