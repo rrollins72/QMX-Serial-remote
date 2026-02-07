@@ -45,7 +45,7 @@ connected to the QMX+ and operating.
 The remote display will connect to the QMX+ via the AUX serial port.
 
 The serial interface baud rate is set to 19200, with 8N1. This will need to be set up on
-the QMX using a USB serial port to control the menu system. Go to Main
+the QMX+ using a USB serial port to control the menu system. Go to Main
 menu\>Configuration\>System config\>GPS & Ser. Ports: Serial 1 on AUX: ENABLED,
 Serial 1 baud: 19200. (Note: I tried using higher baud settings, but that
 resulted in a lot of missed data, so settled on 19200).
@@ -147,8 +147,12 @@ The ESP32-S3 has built in WiFi or Bluetooth, so it would be possible to create a
 that could also show the same information as the display, but that is beyond
 what I intended for this effort. It would also draw a lot more power since the
 WiFi would need to be active to make it functional. Since ESP32-S3 does not support a Bluetooth SPP
-stack it can’t be fully wireless to the QMX with simple Bluetooth serial
+stack it can’t be fully wireless to the QMX+ with simple Bluetooth serial
 modules either, so that was not considered.
+
+I don't have a QMX, but the QMX does have the AUX port (internally) so it could be utilized but would require
+adding wires and bringing them out to a connector. It is possible that the serial port
+on the PTT could be used, but I have not tested that.
 
 # Improvements?
 
@@ -161,7 +165,7 @@ With the remote runniing, I have noticed that if I am running WSJT-X for a while
 for the selected VFO gets set to 0. It is a bit random but quite repeatable. I
 have not discovered the cause. A band change either on the remote or in WSJT-X
 will set the frequency again. WSJT-X does not show that the frequency has changed,
-but the QMX and the remote show the frequency of 0. This also happened with JS8Call.
+but the QMX+ and the remote show the frequency of 0. This also happened with JS8Call.
 JS8Call did show the frequency change.
 
 
