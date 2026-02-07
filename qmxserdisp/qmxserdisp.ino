@@ -38,7 +38,8 @@
 //The current build is set up for displaying MST from the clock, but this can be turned off or adjusted
 //  
 //	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-//  This permission notice shall be included in all copies or substantial portions of the Software.//
+//  This permission notice shall be included in all copies or substantial portions of the Software.
+//
 //////////////////////////////////////////////////////////////////////////
 //
 // The signals on the ST7735 and hook up to the ESP32-S3 Zero are as follows:
@@ -771,4 +772,5 @@ void loop() {
 		prevmils1 = currentMillis;
 	}
 } //Main loop end
+
 
