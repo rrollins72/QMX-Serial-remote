@@ -151,8 +151,7 @@ stack it can’t be fully wireless to the QMX+ with simple Bluetooth serial
 modules either, so that was not considered.
 
 I don't have a QMX, but the QMX does have the AUX port (internally) so it could be utilized but would require
-adding wires and bringing them out to a connector. It is possible that the serial port
-on the PTT could be used, but I have not tested that.
+adding wires and bringing them out to a connector. 
 
 # Improvements?
 
