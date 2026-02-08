@@ -36,10 +36,11 @@
 //Display updates occur on a 1 second increment so there can be some visible lag on some data presented on the display. 
 //The updates from the rotary encoder are done during the main loop and are near real time. 
 //The current build is set up for displaying MST from the clock, but this can be turned off or adjusted
+//
 //  
 //	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
 //  This permission notice shall be included in all copies or substantial portions of the Software.
-//	Randy Rollins
+//
 //////////////////////////////////////////////////////////////////////////
 //
 // The signals on the ST7735 and hook up to the ESP32-S3 Zero are as follows:
@@ -162,11 +163,12 @@ unsigned long btntimer2 = 0;
 unsigned int btnstate = 0;
 
 // Display constants
-const char modLSB[] = "LSB ";
-const char modUSB[] = "USB ";
-const char modCW[] = "CW  ";
-const char modCWR[] = "CWR ";
+const char modLSB[] = "LSB  ";
+const char modUSB[] = "USB  ";
+const char modCW[] = "CW   ";
+const char modCWR[] = "CWR  ";
 const char modDIG[] = "DIGI ";
+const char modDIGR[] = "DIGIR";
 const char vfoAstr[] = "VFOA";
 const char vfoBstr[] = "VFOB";
 const char vfoSplit[] = "SPLIT";
@@ -322,6 +324,9 @@ void Botline (){
           break;
       case 7:
           myTFT.print (modCWR);
+          break;
+      case 9:
+          myTFT.print (modDIGR);
           break;
   }
   myTFT.setCursor(50,85);
@@ -726,13 +731,14 @@ void loop() {
     Serial2.write(";");
   }
 
-// Check for button2  
+// Check for button2
   button2.loop();     // This button changes the mode of the xceiver: Rotates thru CW,DIGI,USB,LSB
   if (button2.isPressed()) {
     if (modex == 2) modex = 1;
     else if (modex == 1) modex = 3;
     else if (modex == 3) modex = 6;
     else if (modex == 6) modex = 2;
+    else if (modex > 6) modex = 2;
     Serial2.write("MD");
     Serial2.write(modex + '0'); // create ascii number for mode and send
     Serial2.write(";");
@@ -772,6 +778,3 @@ void loop() {
 		prevmils1 = currentMillis;
 	}
 } //Main loop end
-
-
-
