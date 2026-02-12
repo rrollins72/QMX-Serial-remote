@@ -60,12 +60,18 @@ The rotary knob with button on press, button A (left) and button B (right).
 size. The step size is changed by a short press on the rotary knob. The step
 sizes are 10Hz, 100Hz, 1kHz, 10kHz.
 
-The band can also be changed by a double click on the rotary knob (it must be
-\~300ms or less). The band will be shown in the lowest display area. The rotary
+**The band** can also be changed by a double click on the rotary knob (it must be
+\~400ms between presses). The band will be shown in the lowest display area. The rotary
 knob can be turned to select the band desired, then the knob pressed to verify
 and the band will be changed to the selected. (This process needs some
 refinement since it required a change to the VFOA frequency to make the change,
 so previous VFOA settings are lost).
+
+**The volume** can also be changed by a long press on the rotary knob. The volume
+(Audio Gain) is set as desired. This is the raw level and is capable of any value
+between 1 and 799. You can set the internal QMX+ volume step, which defaults to
+1dB, this is 4 raw steps. I left this at the raw step (.25dB). The Vol is displayed
+in the lowest display area, similar to the band selection.
 
 **Button A** is on the left and below the rotary control. It simply controls the
 selected VFOA or B.
@@ -80,7 +86,7 @@ done during the main loop and are near real time.
 # Software and IDE build
 
 The Arduino IDE 2.3.7 on Win11 was used to build the code for this project. It will
-require the board manager 'esp-32 by Espressif Systems' be installed, and the
+require the board manager 'esp-32 by Espressif Systems' be installed, the 'OneButton' library and the
 'ST7735_LTSM' library to be installed. Because of the limited pins on the
 ESP32-S3-Zero package, **a modification to the file noted in the code snippet below needs to be made to
 provide an SPI interface on the IO pins used**. This is to change from the
