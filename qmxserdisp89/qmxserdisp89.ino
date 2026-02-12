@@ -23,12 +23,15 @@
 //Functions:
 //Rotary knob will normally adjust the frequency depending on the selected step size. 
 //The step size is changed by a short press on the rotary knob. The step sizes are 10Hz, 100Hz, 1kHz, 10kHz. 
-//The band can also be changed by a double click on the rotary knob (it must be ~300ms or less). 
+//The band can also be changed by a double click on the rotary knob (it must be ~400ms or less). 
 //The band will be shown in the lowest display area. 
 //The rotary knob can be turned to select the band desired, then the knob pressed to verify 
 //and the band will be changed to the selected. 
 //(This process needs some refinement since it required a change to the VFOA frequency to make the change, 
 //so previous VFOA settings are lost).
+//The rotary knob can also be used to adjust the volume with a long press (>600ms).
+//The volume (Analog Gain) is shown in the lower LCD and can be adjusted to a desired listening level,
+//then a short press on the knob will set it to that and return to frequency adjust.
 //Button A is on the left and below the rotary control. It simply controls the selected VFOA or B. 
 //Button B is on the right and below the rotary control. It controls the selected mode. 
 //The modes are cycled through: CW, DIGI, USB, LSB (same as QMX).
@@ -36,6 +39,7 @@
 //Display updates occur on a 1 second increment so there can be some visible lag on some data presented on the display. 
 //The updates from the rotary encoder are done during the main loop and are near real time. 
 //The current build is set up for displaying MST from the clock, but this can be turned off or adjusted
+//
 //  
 //	Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
 //  This permission notice shall be included in all copies or substantial portions of the Software.
@@ -90,6 +94,9 @@ bool bhardwareSPI = true; // true for hardware spi, false for software
 #include <ezButton.h>  // the library to use for SW button and other buttons
 #include <Arduino.h>  // included for general serial use
 
+/////// Onebutton ////////////
+#include <OneButton.h>
+
 ///// Defines for IO pins used
 #define CLK_PIN 1  // ESP32 pin gp1
 #define DT_PIN 2   // ESP32 pin gp2
@@ -110,11 +117,26 @@ volatile int counter = 0;
 volatile int direction = DIRECTION_CW;
 volatile unsigned long last_time;  // for debouncing
 volatile int statecnt = 0;
+
+// Thresholds for rotary button press detects(milliseconds)
+const int ShortPressTop  = 250;
+const int LongPressBase   = 800;
+const int DoubleClickGap = 400;
+// Variables to track timing
+unsigned long pressedTime  = 0;
+unsigned long releasedTime = 0;
+bool isWaitingForDouble    = false;
+bool longPressDetected     = false;
+bool VolProc = false;
+int bstate = 0;		//button state is 0 to idle, 1 for long, 2 for double
+
 int prev_counter = 0;
 // The ezButton library is helpful for button management
-ezButton button(SW_PIN);	// create ezButton objects that attach to pins;
+//ezButton button(SW_PIN);	// create ezButton objects that attach to pins;
 ezButton button1(BUTTON1);	//button for vfo selection
 ezButton button2(BUTTON2);	//button for mode selection
+
+OneButton button(SW_PIN, true); //active low true
 
 // for S3 zero with RGB LED the IO is 21
 #define RGB_BUILTIN 21
@@ -125,7 +147,6 @@ unsigned long prevmils = 0;
 unsigned long prevmils1 = 0;
 
 /*************************************/
-// volatile declaration will avoid any compiler optimization when reading variable values
 volatile size_t received_bytes = 0;
 unsigned int fifoFull = 38;   // max data to receive
 char Rcvbuf1[40];	// buffer to receive data
@@ -137,17 +158,19 @@ char Frcv[2] = "0";
 char Ftrx[2] = "0";
 char freqbuf[15];
 char freqbuf1[15];
+char AudGn[6] = "0180";
 char timedat[9] = "12:00:00";     //time data hh:mm:ss
 char timedat1[3];     // for am or pm
 char timehr[3];       //HR portion
+int AudGnVol = 180;	//base audio volume
 int timehrdat;
 int timelocalhr;
-int rxtxchk = 0;   //receive/transmit state rx=0, tx=1													  
+int rxtxchk = 0;   //receive/transmit state rx=0, tx=1
 // For displaying local time offset from UTC from TM command
 const int timelocal = -7;     //GMT offset for local MST
 const bool TwelveHour = 1;	// For displaying 12 or 24 hour format
 char smeterdat[6] = "00.1";   //smeter data in db xx.x 
-char swrdat[6] = "1.00";      //swr reading x.xx:1												  
+char swrdat[6] = "1.00";      //swr reading x.xx:1
 char lcddat[20] = {};     //lcd data-second line starts at 15 (16 bytes in)
 //char infodat[36] = {};	  //info response 
 char modedat[4] = {};     //mode info 1=LSB, 2=USB, 3=CW, 6=DIGI (FSK), 7=CWR
@@ -162,17 +185,13 @@ long stepset = 10;	//Step size in Hz for rotary step
 int bandsel = 5;	//11 bands. 0=160m..10=6m 5=20m
 bool bandselproc = 0;	//if in band select process
 
-unsigned long btntimer1 = 0;
-unsigned long btntimer2 = 0;
-unsigned int btnstate = 0;
-
 // Display constants
 const char modLSB[] = "LSB  ";
 const char modUSB[] = "USB  ";
 const char modCW[] = "CW   ";
 const char modCWR[] = "CWR  ";
 const char modDIG[] = "DIGI ";
-const char modDIGR[] = "DIGIR";							   
+const char modDIGR[] = "DIGIR";
 const char vfoAstr[] = "VFOA";
 const char vfoBstr[] = "VFOB";
 const char vfoSplit[] = "SPLIT";
@@ -194,10 +213,9 @@ const char bandtxt[11][10] = {"160m band"," 80m band"," 60m band"," 40m band"," 
 //const char band12set[] = "00024930000";		//12M	24.930MHz
 //const char band10set[] = "00028300000";		//10M	28.3MHz
 //const char band6set[] = "00050100000";		//6M	50.1MHz
-const char bandsets[11][12] = {"00001900000","00003600000","00005358500","00007100000","00010125000","00014150000","00018110000","00021200000","00024930000","00028300000","00050100000" };
+const char bandsets[11][12] = {"00001900000","00003600000","00005358500","00007100000","00010125000","00014047500","00018110000","00021200000","00024930000","00028300000","00050100000" };
 
 // Command constants
-
 const char LCcmd[] = "LC;";   //LCD command-receive 35 chars
 const char FAcmd[] = "FA;";   //Freq VFOA command-receive 14 chars, send 14 chars
 const char FBcmd[] = "FB;";   //Freq VFOB command-receive 14 chars, send 14 chars
@@ -208,6 +226,7 @@ const char SMcmd[] = "SM;";   //Smeter command-receive 6 chars
 const char TMcmd[] = "TM;";   //Time command-receive 9 chars
 const char TQcmd[] = "TQ;";   //Tx/Rx command-receive 3 chars
 const char SWcmd[] = "SW;";   //SWR during transmit-receive 6 chars
+const char AGcmd[] = "AG;";   //Audio Gain command-receive 6 chars
 
 ///////////////////////////////////////////////////////////////
 // This is called from the main loop to detect rotation changes
@@ -241,6 +260,51 @@ void rotloop () {
           }         
       }
     }
+}
+
+void RotButtonCheck(){
+	button.tick(); // Monitor button state
+  if (bstate == 1){	//long press
+	  VolProc = true;
+	    Serial2.write(AGcmd);	//request current audio gain on long press
+		delay(5);  
+  }
+  else if (bstate == 2){ //double press
+	    bandselproc = 1;  //enter band select
+  }
+}
+
+// SHORT PRESS: Acts as the stop or regular press
+void handleClick() {
+  if (bstate != 0) {
+    bstate = 0;
+	if (bandselproc) {
+		BandChgSnd();	//if in bandsel state, clear it and send command
+		bandselproc = 0;
+	}
+	VolProc = 0;
+  } 
+  else {
+    Serial.println("Short Press: Standard Action.");
+	  if (stepset == 10) stepset = 100;
+    else if (stepset == 100) stepset = 1000;
+    else if (stepset == 1000) stepset = 10000;
+    else if (stepset == 10000) stepset = 10;
+    Botline();  // update display
+  }
+}
+// DOUBLE PRESS: Starts the double routine
+void handleDoubleClick() {
+  if (bstate == 0) {
+    bstate = 2;
+  }
+}
+
+// LONG PRESS: Starts the long routine
+void handleLongPressStart() {
+  if (bstate == 0) {
+    bstate = 1;
+  }
 }
 
 ////////////// Top line of the display ///////////////////
@@ -373,11 +437,20 @@ void Botline (){
 /////////////// Bottom line where QMX LCD info is displayed //////
 void LCbotline() {
 	myTFT.setFont(FontGroTesk);
-	myTFT.setCursor(0,200);
+	myTFT.setCursor(5,200);
 	if (bandselproc){
 		myTFT.print(bandtxt[bandsel]);
 		myTFT.print("     ");
-	} else  myTFT.print(lcddat);
+			} 
+  else if (VolProc) {
+    myTFT.print("Vol ");
+    myTFT.print(AudGnVol);
+		myTFT.print("     ");    
+  }
+  else  {
+    myTFT.setCursor(5,200);
+    myTFT.print(lcddat);
+  }
 }
 
 /////////// When a frequency change occurs, send from here ///////
@@ -457,6 +530,18 @@ void onReceiveFunction(void) {
 void ParseRcv (){
 	switch (Rcvbuf1[0])
 	{
+	  case 'A':	//AG Audio Gain
+      if (Rcvbuf1[1] == 'G'){
+        AudGn[0] = Rcvbuf1[2];
+        AudGn[1] = Rcvbuf1[3];
+        AudGn[2] = Rcvbuf1[4];
+        AudGn[3] = Rcvbuf1[5];
+		    AudGn[4] = 0;
+		  AudGnVol = atoi(AudGn);
+		}
+		break;
+		
+   
       case 'F':	//FA,FB,FR or FT strings
       	if (Rcvbuf1[1] == 'A'){
           FreqA[0] = Rcvbuf1[2];
@@ -516,7 +601,7 @@ void ParseRcv (){
       }
       else if (Rcvbuf1[1] == 'Q'){
           rxtxchk = Rcvbuf1[2] - '0';   //convert character to integer
-      }	   
+      }
 			break;	
 		case 'L':	//LCD response-buffer up to 17 is top line plus spaces
 			if (Rcvbuf1[1] == 'C'){
@@ -588,6 +673,13 @@ void BandChgSnd(){
   Serial2.write(bandsets[bandsel]);
   Serial2.write(";");
 }
+/////////// Send Audio Gain ////////////////////
+void VolChgSnd(){
+	Serial2.write("AG");
+  sprintf(AudGn,"%d",AudGnVol);   //convert back to string
+	Serial2.write(AudGn);	// send current audio gain (volume) level
+	Serial2.write(";");
+}
 
 //////////////////////// Setup function-start things up /////////////
 
@@ -601,9 +693,14 @@ void setup() {
   pinMode(BUTTON2, INPUT_PULLUP);
 
 
-  button.setDebounceTime(20); // set debounce time milliseconds
+//  button.setDebounceTime(20); // set debounce time milliseconds
   button1.setDebounceTime(20); // set debounce time milliseconds
   button2.setDebounceTime(20); // set debounce time milliseconds
+  
+  // Register callback functions
+  button.attachClick(handleClick);
+  button.attachDoubleClick(handleDoubleClick);
+  button.attachLongPressStart(handleLongPressStart);
   
   Serial2.begin(BAUD, SERIAL_8N1, RXPIN, TXPIN);  // start serial handler
   
@@ -629,7 +726,7 @@ void setup() {
   myTFT.TFTST7789Initialize();
 //**********************************************************
   myTFT.TFTchangeInvertMode(1);
-	myTFT.setRotation(myTFT.Degrees_270);
+	myTFT.setRotation(myTFT.Degrees_270);    // Change as needed for orientation of display
 // use blue as background for SOLID mode
 	myTFT.fillScreen(myTFT.C_BLUE);		//fill blue background
 	myTFT.setFont(FontGroTesk);
@@ -667,7 +764,14 @@ void loop() {
       if (bandselproc){
         bandsel++;
         if (bandsel > 10) bandsel = 0;
+		LCbotline();
       }
+	    else if (VolProc){
+		    AudGnVol++;
+		    if (AudGnVol > 799) AudGnVol = 799;
+        VolChgSnd();
+        LCbotline();
+	    }
       else if (vfoaorb == 0) {
         Vfreqa = Vfreqa+stepset;
 		    FreqChgsend();
@@ -683,12 +787,19 @@ void loop() {
       if (bandselproc){
         bandsel--;
         if (bandsel < 0) bandsel = 10;
+        LCbotline();
+      }
+      else if (VolProc){
+        AudGnVol--;
+        if (AudGnVol < 1) AudGnVol = 1;
+        VolChgSnd();
+        LCbotline();
       }
       else if (vfoaorb == 0) {
         Vfreqa = Vfreqa-stepset;
 		    FreqChgsend();		
         Frequpdate();
-	     }
+	    }
       else if (vfoaorb == 1) {
         Vfreqb = Vfreqb-stepset;
 		    FreqChgsend();
@@ -698,32 +809,9 @@ void loop() {
     prev_counter = counter;
   }
   
- // Check for rotary button						   
-  button.loop();
-  if (button.isPressed()) {
-	  if (btnstate == 0){
-      btntimer1 = millis();
-      btnstate = 1;
-    }
-    else if ((btnstate == 1) && ((currentMillis - btntimer1) < 350)){
-      btnstate = 2;     //double click in less than 100ms
-      bandselproc = 1;  //enter band select 
-    }
-    else if (btnstate == 2 ){
-      btnstate = 0;
-      bandselproc = 0;
-      BandChgSnd();
-    }
-  }
-  if (((currentMillis - btntimer1) > 450) && (btnstate==1)){
-    if (stepset == 10) stepset = 100;
-    else if (stepset == 100) stepset = 1000;
-    else if (stepset == 1000) stepset = 10000;
-    else if (stepset == 10000) stepset = 10;
-    Botline();
-    btnstate = 0;
-  }
-  
+ // Check for rotary button
+ RotButtonCheck();	// Process the rotary button pushes
+
 // Check for button 1
   button1.loop();     // This button changes the VFO from current to next
   if (button1.isPressed()) {
@@ -734,7 +822,7 @@ void loop() {
     else Serial2.write("1");
     Serial2.write(";");
   }
-  
+
 // Check for button2
   button2.loop();     // This button changes the mode of the xceiver: Rotates thru CW,DIGI,USB,LSB
   if (button2.isPressed()) {
@@ -767,11 +855,11 @@ void loop() {
       if (rxtxchk == 1){
         Serial2.write(SWcmd);
         delay(4);
-      }											   
+      }
       Serial2.write(SMcmd);   //Smeter request
       delay(8);
       Serial2.write(FRcmd);   //get selection
-      delay(4); 
+      delay(4);
       Botline();
       Serial2.write(LCcmd);   //get LC data for bottom row
       delay(18);
