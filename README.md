@@ -109,7 +109,7 @@ The chosen frequencies for the band-switch are as follows:\
 60M 5.3585MHz\
 40M 7.1MHz\
 30M 10.125MHz\
-20M 14.150MHz\
+20M 14.0475MHz\
 17M 18.110MHz\
 15M 21.2MHz\
 12M 24.930MHz\
